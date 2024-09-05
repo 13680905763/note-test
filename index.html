@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .btn {
+        cursor: pointer;
+      }
+      .note:hover {
+        color: aquamarine;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        top: 10%;
+        left: 25%;
+        width: 50%;
+        height: 80%;
+        background-color: antiquewhite;
+      }
+      #modal-header {
+        display: flex;
+        justify-content: space-between;
+      }
+      #close-modal {
+        font-size: 20px;
+        color: red;
+      }
+      .is-show {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h2>笔记列表</h2>
+      <span id="refresh" class="btn">刷新</span>
+      <ul></ul>
+    </div>
+    <div id="note-modal" class="modal">
+      <div id="modal-header">
+        <h2>笔记详情</h2>
+        <span id="close-modal" class="btn">X</span>
+      </div>
+      <p id="note-detail"></p>
+    </div>
+  </body>
+  <script>
+    const noteListEle = document.querySelector("ul");
+    const noteModalEle = document.querySelector("#note-modal");
+    const noteDetailEle = document.querySelector("#note-detail");
+    const closeBtn = document.querySelector("#close-modal");
+    const refreshBtn = document.querySelector("#refresh");
+    const handleCloseModal = () => {
+      noteModalEle.classList.remove("is-show");
+    };
+    closeBtn.addEventListener("click", handleCloseModal);
+    refreshBtn.addEventListener("click", ()=>{getData()});
+    const handleNoteClick = (id) => {
+      return () => {
+        getNote(id)
+      };
+    };
+    const getData = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/api/List");
+        const data = await response.json(); // 等待解析 JSON 数据
+        noteListEle.innerHTML = '';
+        data.forEach((note) => {
+            const li = document.createElement("li");
+            li.classList.add("note");
+            li.classList.add("btn");
+            li.addEventListener("click", handleNoteClick(note.id));
+            li.textContent = note.name;
+            noteListEle.appendChild(li);
+        });
+      } catch (error) {
+        console.error("There was a problem with the fetch operation:", error);
+      }
+    };
+    const getNote = async (id) => {
+      try {
+        const response = await fetch(`http://localhost:3000/api/note?id=${id}`);
+        const data = await response.json(); // 等待解析 JSON 数据
+        noteModalEle.classList.add("is-show");
+        noteDetailEle.textContent = data.details;
+      } catch (error) {
+        console.error("There was a problem with the fetch operation:", error);
+      }
+    };
+    getData();
+  </script>
+</html>
